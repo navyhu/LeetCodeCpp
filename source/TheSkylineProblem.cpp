@@ -2,12 +2,55 @@
 #include <vector>
 #include <utility>
 #include <algorithm>
+#include <map>
+#include <set>
 
 /**
  * By analyzing the requirement, those buildings can be re-shaped to rectangles
  * with no intersection. Those key points are the left-top points of those
  * rectangles, plus the right-bottom points of the last one.
  */
+class Solution2
+{
+public:
+	std::vector<std::pair<int, int>> getSkyline(std::vector<std::vector<int>>& buildings)
+	{
+		std::vector<std::pair<int, int>> lResult;
+
+		// store the top points on buildings in sorted map
+		std::multimap<int, int> lTopPoints;
+		for (auto lBuilding : buildings)
+		{
+			lTopPoints.emplace(lBuilding[0], lBuilding[2]);
+			lTopPoints.emplace(lBuilding[1], -lBuilding[2]);
+		}
+
+		std::multiset<int> lHeights = { 0 };
+		int x = -1;
+		int y = 0;
+		for (auto lTopPoint : lTopPoints)
+		{
+			if (x >= 0 && x != lTopPoint.first && (lResult.empty() || lResult.rbegin()->second != y))
+			{
+				lResult.push_back(std::make_pair(x, y));
+			}
+
+			if (lTopPoint.second > 0)
+				lHeights.insert(lTopPoint.second);
+			else
+				lHeights.erase(lHeights.find(-lTopPoint.second));
+
+			x = lTopPoint.first;
+			y = *lHeights.rbegin();
+		}
+
+		if (!lResult.empty())
+			lResult.push_back(std::make_pair(x, 0));
+
+		return lResult;
+	}
+};
+
 class Solution
 {
 	public:
@@ -168,7 +211,7 @@ class Solution
 
 int main()
 {
-	const int lBuildingCount = 3;
+	const int lBuildingCount = 5;
 	const int lCount = 3;
 	int lTestInput[][lCount] = 
 	/*{
@@ -176,22 +219,22 @@ int main()
 		{1,5,3},
 		{1,5,3}
 	};*/
-	{
+	/*{
 		{1,2,1},
 		{1,2,2},
 		{1,2,3}
-	};
+	};*/
 	/*{
 		{0,2,3},
 		{2,5,3}
 	};*/
-	/*{
+	{
 		{2, 9, 10},
 		{3, 7, 15},
 		{5, 12, 12},
 		{15, 20, 10},
 		{19, 24, 8}
-	};*/
+	};
 
 	std::vector<std::vector<int>> lBuildings;
 	for (int i = 0; i < lBuildingCount; i++)
@@ -215,7 +258,7 @@ int main()
 	}
 
 	
-	Solution lTest;
+	Solution2 lTest;
 	std::vector<std::pair<int, int>> lResult = lTest.getSkyline(lBuildings);
 
 	for (auto lPoint : lResult)
