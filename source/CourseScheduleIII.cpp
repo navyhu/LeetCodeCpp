@@ -1,6 +1,7 @@
 #include <iostream>
 #include <vector>
 #include <map>
+#include <set>
 
 using namespace std;
 
@@ -11,20 +12,21 @@ class Solution {
 		for (auto& course : courses)
 			endDay2Len.insert(make_pair(course[1], course[0]));
 
-		vector<int> results;
+		int len = 0;
+		multiset<int> results;
 		for (auto& day2Len : endDay2Len) {
-			if (results.size() == 0) {
-				results.push_back(day2Len.second);
-				continue;
+			if (len + day2Len.second <= day2Len.first) {
+				results.insert(day2Len.second);
+				len += day2Len.second;
+			} else {
+				auto biggest = results.end();
+				biggest--;
+				if (*biggest > day2Len.second) {
+					len = len + day2Len.second - *biggest;
+					results.erase(biggest);
+					results.insert(day2Len.second);
+				}
 			}
-			for (int i = results.size() - 1; i >= 0; i--) {
-				int newLen = results[i] + day2Len.second;
-				if (i == results.size() - 1 && newLen <= day2Len.first)
-					results.push_back(results[i] + day2Len.second);
-				else if (newLen <= day2Len.first && newLen < results[i + 1])
-					results[i + 1] = newLen;
-			}
-			results[0] = day2Len.second < results[0] ? day2Len.second : results[0];
 		}
 
 		return results.size();
